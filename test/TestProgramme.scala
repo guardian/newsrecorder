@@ -1,7 +1,7 @@
 import java.time.{ZoneId, ZoneOffset, ZonedDateTime}
 
 import org.specs2._
-import models.Programme
+import models.{NewProgramme, Programme}
 
 class TestProgramme extends mutable.Specification {
   "Test the programme data model".title
@@ -15,36 +15,15 @@ class TestProgramme extends mutable.Specification {
         <category lang="en">comment</category>
       </programme>
 
-      val programme = Programme.fromXmlNode(progSpec)
+      val programme = NewProgramme.fromXmlNode(progSpec)
       programme.channelId mustEqual "south.bbc1.bbc.co.uk"
       programme.category must beSome(Seq("news", "comment"))
-      programme.credits must beNone
+      //programme.credits must beNone
       programme.startTime mustEqual ZonedDateTime.of(2018,1,29,18,0,0,0,ZoneOffset.UTC)
       programme.endTime mustEqual ZonedDateTime.of(2018,1,29,18,30,0,0,ZoneOffset.UTC)
       programme.title mustEqual "BBC News at Six"
       programme.description must beSome("The latest national and international news stories from the BBC News team, followed by weather. Also in HD. [S]")
-      programme.credits must beNone
-    }
-
-    "provide credits information where present" in {
-      val progSpec =   <programme start="20180129120000 +0000" stop="20180129130000 +0000" channel="south.bbc2.bbc.co.uk">
-        <title lang="en">Daily Politics</title>
-        <desc lang="en">The latest political news, interviews and debate. Also in HD. [S]</desc>
-        <credits>
-          <presenter>Jo Coburn</presenter>
-        </credits>
-        <category lang="en">news</category>
-        <category lang="en">talk</category>
-      </programme>
-
-      val programme = Programme.fromXmlNode(progSpec)
-      programme.channelId mustEqual "south.bbc2.bbc.co.uk"
-      programme.category must beSome(Seq("news", "talk"))
-      programme.startTime mustEqual ZonedDateTime.of(2018,1,29,12,0,0,0,ZoneOffset.UTC)
-      programme.endTime mustEqual ZonedDateTime.of(2018,1,29,13,0,0,0,ZoneOffset.UTC)
-      programme.title mustEqual "Daily Politics"
-      programme.description must beSome("The latest political news, interviews and debate. Also in HD. [S]")
-      programme.credits.get must havePair("presenter"->"Jo Coburn")
+      //programme.credits must beNone
     }
 
     "support extended information from schedules direct" in {
@@ -77,7 +56,7 @@ class TestProgramme extends mutable.Specification {
         </rating>
       </programme>
 
-      val programme = Programme.fromXmlNode(progSpec)
+      val programme = NewProgramme.fromXmlNode(progSpec)
       programme.channelId mustEqual "I102471.json.schedulesdirect.org"
       programme.title mustEqual "Say Yes to the Dress"
       programme.subTitle must beSome("Requests Like None of the Rest")

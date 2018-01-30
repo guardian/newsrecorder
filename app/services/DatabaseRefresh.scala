@@ -59,7 +59,7 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
     Logger.info("Outputting channels to database")
     val channelsPresent = for(chanNode <- xmldoc \ "channel") yield NewChannel.fromXmlNode(chanNode)
 
-    val programmes = for(progNode <- xmldoc \ "programme") yield Programme.fromXmlNode(progNode)
+    val programmes = for(progNode <- xmldoc \ "programme") yield NewProgramme.fromXmlNode(progNode)
 
     val populateDb = DBIO.seq(
       channels ++= channelsPresent
