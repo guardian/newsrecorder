@@ -24,8 +24,10 @@ libraryDependencies ++= Seq(
 // https://mvnrepository.com/artifact/com.nrinaudo/kantan.xpath
 libraryDependencies += "com.nrinaudo" %% "kantan.xpath" % "0.3.2"
 
-// https://mvnrepository.com/artifact/org.scalatestplus.play/scalatestplus-play
-libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
+//AWS
+libraryDependencies ++= Seq(
+  "com.gu" %% "scanamo" % "1.0.0-M2" exclude("commons-logging","commons-logging")
+)
 
 val circeVersion = "0.9.0"
 libraryDependencies ++= Seq(

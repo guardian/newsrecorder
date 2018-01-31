@@ -4,7 +4,10 @@ import java.sql.Date
 import java.time.{Instant, ZoneOffset, ZonedDateTime}
 import java.util.UUID
 
+import slick.jdbc.JdbcProfile
 import slick.jdbc.SQLiteProfile.api._
+
+import scala.concurrent.Future
 
 /*
 case class Programme(startTime: ZonedDateTime, endTime: ZonedDateTime, channelId: String, title: String,
@@ -14,7 +17,12 @@ case class Programme(startTime: ZonedDateTime, endTime: ZonedDateTime, channelId
 }
 
  */
-
+object ProgrammeTable {
+  def lookup(db: JdbcProfile#Backend#Database, episodeId:String, channelId:String):Future[Seq[Programme]] = {
+    val programmes = TableQuery[ProgrammeTable]
+    db.run(programmes.filter(_.episodeId===episodeId).filter(_.channelId===channelId).result)
+  }
+}
 class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME") with CustomConverters {
   val channels = TableQuery[ChannelTable]
 
