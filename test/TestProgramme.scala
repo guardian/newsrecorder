@@ -15,7 +15,7 @@ class TestProgramme extends mutable.Specification {
         <category lang="en">comment</category>
       </programme>
 
-      val programme = NewProgramme.fromXmlNode(progSpec)
+      val programme = NewProgramme.fromXmlNode(progSpec,1)
       programme.channelId mustEqual "south.bbc1.bbc.co.uk"
       programme.category must beSome(Seq("news", "comment"))
       //programme.credits must beNone
@@ -56,7 +56,7 @@ class TestProgramme extends mutable.Specification {
         </rating>
       </programme>
 
-      val programme = NewProgramme.fromXmlNode(progSpec)
+      val programme = NewProgramme.fromXmlNode(progSpec,1)
       programme.channelId mustEqual "I102471.json.schedulesdirect.org"
       programme.title mustEqual "Say Yes to the Dress"
       programme.subTitle must beSome("Requests Like None of the Rest")

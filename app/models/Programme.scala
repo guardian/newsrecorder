@@ -2,8 +2,11 @@ package models
 
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
-import kantan.xpath._           // Basic kantan.xpath types.
-import kantan.xpath.implicits._ // Implicit operators and literals.
+import java.util.UUID
+
+import kantan.xpath._
+import kantan.xpath.implicits._
+
 import scala.xml.{Node, NodeSeq}
 
 object NewProgramme extends XmlHelpers {
@@ -28,7 +31,7 @@ object NewProgramme extends XmlHelpers {
     }
   }
 
-  def fromXmlNode(xmlNode:Node):Programme = {
+  def fromXmlNode(xmlNode:Node, generation:Int):Programme = {
     val formatter:DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmss Z")
     //FIXME: this is really ugly and inefficient. I guess that I should re-write the whole parser to use Kantan instead of scala.xml
     val nodeString = xmlNode.toString()
@@ -41,6 +44,8 @@ object NewProgramme extends XmlHelpers {
     }
 
     Programme(
+      generation,
+      UUID.randomUUID(),
       ZonedDateTime.parse(getAttributeString(xmlNode,"start").get, formatter),
       ZonedDateTime.parse(getAttributeString(xmlNode,"stop").get, formatter),
       getAttributeString(xmlNode,"channel").get,
@@ -54,12 +59,8 @@ object NewProgramme extends XmlHelpers {
   }
 }
 
-case class Programme(startTime: ZonedDateTime, endTime: ZonedDateTime, channelId: String, title: String,
+case class Programme(generation:Int, uuid:UUID, startTime: ZonedDateTime, endTime: ZonedDateTime, channelId: String, title: String,
                      subTitle: Option[String], description: Option[String], category:Option[Seq[String]],
                      episodeId: Option[String]) {
-
-  def getCredits:Map[String,Seq[String]] = {
-    Map()
-  }
 
 }

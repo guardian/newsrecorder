@@ -2,6 +2,7 @@ package models
 
 import java.sql.Date
 import java.time.{Instant, ZoneOffset, ZonedDateTime}
+import java.util.UUID
 
 import slick.jdbc.SQLiteProfile.api._
 
@@ -31,7 +32,12 @@ class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME"){
     { sql => if(sql.isEmpty) None else Some(sql.split("|"))}
   )
 
-  def id = column[Int]("PROG_KEY",O.PrimaryKey,O.AutoInc)
+  implicit val uuidColumnType = MappedColumnType.base[UUID,String](
+    { data=>data.toString},
+    { sql =>UUID.fromString(sql)}
+  )
+
+  def uuid = column[UUID]("PROG_UUID",O.PrimaryKey)
   def startTime = column[ZonedDateTime]("START")
   def endTime = column[ZonedDateTime]("END")
   def channelId = column[String]("CHANNEL_ID")
@@ -44,8 +50,9 @@ class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME"){
 
   def channelIdKey = foreignKey("FK_PROG_CHANNEL", channelId, channels)(_.id)
 
+  def generation = column[Int]("GENERATION")
   def titleIndex = index("IDX_PROG_TITLE",title)
   def episodeIdIndex = index("IDX_PROG_EPISODEID", episodeId)
 
-  def * = (startTime,endTime,channelId,title,subTitle,description,category,episodeId) <> (Programme.tupled, Programme.unapply)
+  def * = (generation, uuid,startTime,endTime,channelId,title,subTitle,description,category,episodeId) <> (Programme.tupled, Programme.unapply)
 }
