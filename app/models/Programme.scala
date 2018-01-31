@@ -4,6 +4,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.UUID
 
+import com.google.common.io.BaseEncoding
 import kantan.xpath._
 import kantan.xpath.implicits._
 
@@ -22,13 +23,18 @@ object NewProgramme extends XmlHelpers {
 
       val result = creditsList.foldLeft(initialMap)((acc:Map[String,Seq[String]],entry:(String,String))=>
         if(acc.contains(entry._1)){
-          acc + (entry._1 -> (acc(entry._1) ++ Seq(entry._2)).asInstanceOf[Seq[String]])
+          acc + (entry._1 -> (acc(entry._1) ++ Seq(entry._2)))
         } else {
           acc + (entry._1 -> Seq(entry._2))
         }
       )
       Some(result)
     }
+  }
+
+  def generateUniqueId(maybeString: Option[String], str: String, timestr: String): String ={
+    val stringToEncode = s"${maybeString.getOrElse("")}\n$str\n$timestr"
+    BaseEncoding.base64().encode(stringToEncode.getBytes)
   }
 
   def fromXmlNode(xmlNode:Node, generation:Int):Programme = {
@@ -43,9 +49,14 @@ object NewProgramme extends XmlHelpers {
         None
     }
 
+    val uniqueId = generateUniqueId(episodeNum,
+      getAttributeString(xmlNode,"channel").get,
+      getAttributeString(xmlNode,"start").get
+    )
+
     Programme(
       generation,
-      UUID.randomUUID(),
+      uniqueId,
       ZonedDateTime.parse(getAttributeString(xmlNode,"start").get, formatter),
       ZonedDateTime.parse(getAttributeString(xmlNode,"stop").get, formatter),
       getAttributeString(xmlNode,"channel").get,
@@ -60,12 +71,12 @@ object NewProgramme extends XmlHelpers {
 
   def fromXmlNodeWithCredits(xmlNode:Node, generation:Int):(Programme,Seq[Credit]) = {
     val prog = fromXmlNode(xmlNode, generation)
-    val credits = CreditsList.fromXmlNode(xmlNode,prog.uuid, generation)
+    val credits = CreditsList.fromXmlNode(xmlNode,prog.uniqueId, generation)
     (prog, credits)
   }
 }
 
-case class Programme(generation:Int, uuid:UUID, startTime: ZonedDateTime, endTime: ZonedDateTime, channelId: String, title: String,
+case class Programme(generation:Int, uniqueId: String, startTime: ZonedDateTime, endTime: ZonedDateTime, channelId: String, title: String,
                      subTitle: Option[String], description: Option[String], category:Option[Seq[String]],
                      episodeId: Option[String]) {
 

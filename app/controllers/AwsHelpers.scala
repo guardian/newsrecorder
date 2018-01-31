@@ -7,7 +7,7 @@ import com.amazonaws.services.dynamodbv2.{AmazonDynamoDB, AmazonDynamoDBClientBu
 import play.api.Configuration
 
 trait AwsHelpers {
-  protected val region:Regions
+  protected val region:String
 
   protected def getClient:AmazonDynamoDB = {
     val chain = new AWSCredentialsProviderChain(

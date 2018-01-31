@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: "Request recordings for newsrecorder daemon"
+Parameters:
+  App:
+    Type: String
+    Description: Application identifier for RiffRaff
+    Default: launchdetector
+  Stack:
+    Type: String
+    Description: Stack identifier for RiffRaff
+    Default: multimedia
+  Stage:
+    Type: String
+    AllowedValues:
+      - CODE
+      - DEV
+      - PROD
+    Description: Deployment stage
+Resources:
+  RecordingsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+#        - AttributeName: episodeId
+#          AttributeType: S
+        - AttributeName: startTime
+          AttributeType: S
+        - AttributeName: channelId
+          AttributeType: S
+        - AttributeName: uniqueId
+          AttributeType: S
+        - AttributeName: dummy
+          AttributeType: N
+      KeySchema:
+        - AttributeName: uniqueId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: startIndex
+          KeySchema:
+          - AttributeName: dummy
+            KeyType: HASH
+          - AttributeName: startTime
+            KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            WriteCapacityUnits: 1
+            ReadCapacityUnits: 1
+        - IndexName: channelIndex
+          KeySchema:
+            - AttributeName: channelId
+              KeyType: HASH
+            - AttributeName: startTime
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            WriteCapacityUnits: 1
+            ReadCapacityUnits: 1
+      ProvisionedThroughput:
+        WriteCapacityUnits: 1
+        ReadCapacityUnits: 1
+      TableName: !Sub ${App}-recordings-${Stage}-v1
+      Tags:
+        - Key: App
+          Value: !Sub ${App}
+        - Key: Stack
+          Value: !Sub ${Stack}
+        - Key: Stage
+          Value: !Sub ${Stage}
+Outputs:
+  DynamoTable:
+    Value: !Ref RecordingsTable

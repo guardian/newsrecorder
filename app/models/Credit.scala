@@ -12,12 +12,12 @@ object CreditsList {
         if childNode.label!="#PCDATA"
       ) yield childNode.label -> childNode.text
 
-  def fromXmlNode(xmlNode:Node, programmeRef: UUID, generation: Int): Seq[Credit] = {
+  def fromXmlNode(xmlNode:Node, programmeRef: String, generation: Int): Seq[Credit] = {
     getCredits(xmlNode \ "credits").map(credInfo=>Credit(programmeRef, generation, credInfo._1, credInfo._2))
   }
 
 }
 
-case class Credit(programmeRef: UUID, generation:Int, role:String, name: String) {
+case class Credit(programmeRef: String, generation:Int, role:String, name: String) {
 
 }

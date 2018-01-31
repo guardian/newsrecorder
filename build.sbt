@@ -26,7 +26,18 @@ libraryDependencies += "com.nrinaudo" %% "kantan.xpath" % "0.3.2"
 
 //AWS
 libraryDependencies ++= Seq(
-  "com.gu" %% "scanamo" % "1.0.0-M2" exclude("commons-logging","commons-logging")
+  "com.gu" %% "scanamo" % "1.0.0-M2" exclude("commons-logging","commons-logging"),
+  "org.typelevel" %% "cats-free" % "1.0.1"
+)
+
+//logging
+libraryDependencies ++= Seq(
+  // https://mvnrepository.com/artifact/ch.qos.logback/logback-classic
+  "ch.qos.logback" % "logback-classic" % "1.2.3",
+  // https://mvnrepository.com/artifact/ch.qos.logback/logback-core
+  "ch.qos.logback" % "logback-core" % "1.2.3",
+  "org.slf4j" % "jcl-over-slf4j" % "1.7.25"
+
 )
 
 val circeVersion = "0.9.0"

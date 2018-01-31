@@ -28,7 +28,7 @@ class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME") with Cu
 
   def generation = column[Int]("GENERATION")
 
-  def uuid = column[UUID]("PROG_UUID",O.PrimaryKey)
+  def uniqueId = column[String]("PROG_UNIQUEID",O.PrimaryKey)
   def startTime = column[ZonedDateTime]("START")
   def endTime = column[ZonedDateTime]("END")
   def channelId = column[String]("CHANNEL_ID")
@@ -44,5 +44,5 @@ class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME") with Cu
   def titleIndex = index("IDX_PROG_TITLE",title)
   def episodeIdIndex = index("IDX_PROG_EPISODEID", episodeId)
 
-  def * = (generation, uuid,startTime,endTime,channelId,title,subTitle,description,category,episodeId) <> (Programme.tupled, Programme.unapply)
+  def * = (generation, uniqueId ,startTime,endTime,channelId,title,subTitle,description,category,episodeId) <> (Programme.tupled, Programme.unapply)
 }

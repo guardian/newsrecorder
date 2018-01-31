@@ -14,6 +14,7 @@ import slick.jdbc.SQLiteProfile.api._
 import play.api.Logger
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 @Singleton
 class ChannelsController @Inject()(protected val dbConfigProvider:DatabaseConfigProvider, cc: ControllerComponents, actorSystem: ActorSystem)
@@ -27,9 +28,10 @@ class ChannelsController @Inject()(protected val dbConfigProvider:DatabaseConfig
       val results = db.run(channels.result)
 
       results.map(channelList => Ok(channelList.asJson.toString))
+
     } catch {
       case excep:org.sqlite.SQLiteException=>
-        if(excep.getResultCode== SQLiteErrorCode.SQLITE_BUSY){
+        if(excep.getResultCode==SQLiteErrorCode.SQLITE_BUSY){
           Future(RequestTimeout("Database cache busy, please try again"))
         } else {
           Logger.error("Could not list channels",excep)
