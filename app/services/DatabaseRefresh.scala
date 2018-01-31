@@ -24,14 +24,14 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
   private val programmes = TableQuery[ProgrammeTable]
   private val credits = TableQuery[CreditsTable]
 
-//  maybeSetupSchema().onComplete({
-//    case Success(unit)=>
-//      Logger.info("Successfully set up schema")
-//      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
-//    case Failure(error)=>
-//      Logger.warn("Could not set up schema",error)
-//      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
-//  })
+  maybeSetupSchema().onComplete({
+    case Success(unit)=>
+      Logger.info("Successfully set up schema")
+      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
+    case Failure(error)=>
+      Logger.warn("Could not set up schema",error)
+      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
+  })
 
   def doRefresh():Unit = {
     val currentGeneration = Await.result(getCurrentGeneration, 5.seconds)
