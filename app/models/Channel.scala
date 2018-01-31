@@ -6,7 +6,7 @@ import scala.xml._
 object NewChannel extends XmlHelpers {
   def fromXmlNode(xmlNode:Node):Channel = {
     Channel(xmlNode.attribute("id").map(_.head.text).getOrElse("unknown"),
-      (xmlNode \ "display-name").text, getAttributeString(xmlNode \ "icon", "src"))
+      (xmlNode \ "display-name").head.text, getAttributeString(xmlNode \ "icon", "src"))
   }
 }
 

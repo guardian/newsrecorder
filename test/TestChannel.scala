@@ -27,5 +27,17 @@ class TestChannel extends mutable.Specification {
       channel.displayName mustEqual "BBC 1 HD"
       channel.iconUrl mustEqual None
     }
+
+    "only take the first descriptive name" in {
+      val channelSpec = <channel id="I101972.json.schedulesdirect.org">
+        <display-name>BLAZE</display-name>
+        <display-name>BLAZUK</display-name>
+        <display-name>63</display-name>
+        <icon src="https://s3.amazonaws.com/schedulesdirect/assets/stationLogos/s101972_h3_aa.png" width="360" height="270" />
+      </channel>
+
+      val channel = NewChannel.fromXmlNode(channelSpec)
+      channel.displayName mustEqual "BLAZE"
+    }
   }
 }
