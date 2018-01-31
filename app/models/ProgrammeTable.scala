@@ -18,6 +18,8 @@ case class Programme(startTime: ZonedDateTime, endTime: ZonedDateTime, channelId
 class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME") with CustomConverters {
   val channels = TableQuery[ChannelTable]
 
+  def generation = column[Int]("GENERATION")
+
   def uuid = column[UUID]("PROG_UUID",O.PrimaryKey)
   def startTime = column[ZonedDateTime]("START")
   def endTime = column[ZonedDateTime]("END")
@@ -31,7 +33,6 @@ class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME") with Cu
 
   def channelIdKey = foreignKey("FK_PROG_CHANNEL", channelId, channels)(_.id)
 
-  def generation = column[Int]("GENERATION")
   def titleIndex = index("IDX_PROG_TITLE",title)
   def episodeIdIndex = index("IDX_PROG_EPISODEID", episodeId)
 

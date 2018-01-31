@@ -6,7 +6,10 @@
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
 GET     /api/channels               @controllers.ChannelsController.allChannels
-GET     /api/channels/:chan    @controllers.ChannelsController.channelById(channelId = chan)
+GET     /api/channels/:channelId    @controllers.ChannelsController.channelById(channelId:String)
+
+GET     /api/programmes             @controllers.ProgrammesController.programmes
+GET     /api/programmes/:channelId  @controllers.ProgrammesController.programmesByChannel(channelId:String)
 
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count

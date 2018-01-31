@@ -24,14 +24,14 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
   private val programmes = TableQuery[ProgrammeTable]
   private val credits = TableQuery[CreditsTable]
 
-  maybeSetupSchema().onComplete({
-    case Success(unit)=>
-      Logger.info("Successfully set up schema")
-      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
-    case Failure(error)=>
-      Logger.warn("Could not set up schema",error)
-      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
-  })
+//  maybeSetupSchema().onComplete({
+//    case Success(unit)=>
+//      Logger.info("Successfully set up schema")
+//      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
+//    case Failure(error)=>
+//      Logger.warn("Could not set up schema",error)
+//      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
+//  })
 
   def doRefresh():Unit = {
     val currentGeneration = Await.result(getCurrentGeneration, 5.seconds)
@@ -39,14 +39,15 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
     println(s"Current generation is $currentGeneration")
     val updateFutures = try {
       if(currentGeneration.isDefined)
-        readInData("/Users/localhome/workdev/newsrecorder/tv_uk_extractedinfo.xml",currentGeneration.get+1)
+        readInData("/Users/localhome/workdev/newsrecorder/test_schedulesdirect_extracted.xml",currentGeneration.get+1)
       else
-        readInData("/Users/localhome/workdev/newsrecorder/tv_uk_extractedinfo.xml",1)
+        readInData("/Users/localhome/workdev/newsrecorder/test_schedulesdirect_extracted.xml",1)
     } catch {
       case e:Exception=>
         Logger.error("Could not refresh: ",e)
         return
     }
+
     Logger.info("Done")
     if(currentGeneration.isDefined) {
       Logger.info(s"Deleting old generation info ${currentGeneration.get}")
@@ -79,9 +80,12 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
     Logger.info(s"Reading in listings data from $filename...")
     val xmldoc = XML.loadFile(filename)
 
-    Logger.info("Outputting channels to database")
+    val timecheckChannelStart = System.currentTimeMillis()/1000
+
     val channelsPresent = for(chanNode <- xmldoc \ "channel") yield NewChannel.fromXmlNode(chanNode)
     val channelsUpdate = for(chan <- channelsPresent) yield channels.insertOrUpdate(chan)
+
+    Logger.info(s"Outputting data for ${channelsPresent.length} channels to database")
 
     val programmesAndCredits = for(progNode <- xmldoc \ "programme") yield NewProgramme.fromXmlNodeWithCredits(progNode,generation)
 
@@ -90,15 +94,19 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
 
     //val credits = for(progNode <- xmldoc \ "programme") yield CreditsList.fromXmlNode(progNode)
     channelsUpdate.map(chan=>Await.result(db.run(chan),5.seconds))
-    Logger.info("Done")
 
-    Logger.info(s"Outputting programmes data generation $generation to database")
+    val timecheckChannelEnd = System.currentTimeMillis()/1000
+    Logger.info(s"Done. Channel output took ${timecheckChannelEnd-timecheckChannelStart} seconds")
+
+    Logger.info(s"Outputting data for ${programmesPresent.length} programmes [generation $generation] to database")
     Await.ready(db.run(DBIO.seq(programmes ++= programmesPresent)), 10.minutes)
-    Logger.info("Done")
+    val timecheckProgsEnd = System.currentTimeMillis()/1000
+    Logger.info(s"Done. Programmes output took ${timecheckProgsEnd-timecheckChannelEnd} seconds")
 
-    Logger.info(s"Outputting credits data generation $generation to database")
-    Await.ready(db.run(DBIO.seq(credits ++= creditsPresent)),10.minutes)
-    Logger.info(s"Done")
+//    Logger.info(s"Outputting data for ${creditsPresent.length} credits [generation $generation] to database")
+//    Await.ready(db.run(DBIO.seq(credits ++= creditsPresent)),10.minutes)
+//    val timecheckCreditsEnd = System.currentTimeMillis()/1000
+//    Logger.info(s"Done. Credits output took ${timecheckCreditsEnd - timecheckProgsEnd} seconds")
   }
 
   /* returns a future containing the number of rows deleted */

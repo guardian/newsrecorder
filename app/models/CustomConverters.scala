@@ -18,7 +18,7 @@ trait CustomConverters {
 
   implicit val seqStringColumnType = MappedColumnType.base[Option[Seq[String]], String](
     { data=> data.getOrElse(Seq()).mkString("|") },
-    { sql => if(sql.isEmpty) None else Some(sql.split("|"))}
+    { sql => if(sql.isEmpty) None else Some(sql.split("\\|"))} //remember that split() requires a regex and | is a regex char
   )
 
   implicit val uuidColumnType = MappedColumnType.base[UUID,String](

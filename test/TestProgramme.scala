@@ -65,4 +65,13 @@ class TestProgramme extends mutable.Specification {
       programme.episodeId must beSome("EP014051470152")
     }
   }
+
+  "string test" should {
+    "split and recombine" in {
+      val encodedString = "valone|valtwo|valthree"
+      val splitup = encodedString.split("\\|")
+      splitup.length mustEqual 3
+
+    }
+  }
 }

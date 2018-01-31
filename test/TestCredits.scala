@@ -1,5 +1,7 @@
+import java.util.UUID
+
 import org.specs2._
-import models.{Credit,CreditsList}
+import models.{Credit, CreditsList}
 
 class TestCredits extends mutable.Specification {
   "Test the credits model".title
@@ -35,12 +37,14 @@ class TestCredits extends mutable.Specification {
         </rating>
       </programme>
 
-      val credits = CreditsList.fromXmlNode(progSpec, -1)
+      val progUuid = UUID.randomUUID()
+
+      val credits = CreditsList.fromXmlNode(progSpec, progUuid, -1)
 
       credits.length mustEqual 3
-      credits.head mustEqual Credit(-1,"actor","Ronnie Rothstein")
-      credits(1) mustEqual Credit(-1,"actor","Mara Urshel")
-      credits(2) mustEqual Credit(-1,"actor","Randy Fenoli")
+      credits.head mustEqual Credit(progUuid, -1,"actor","Ronnie Rothstein")
+      credits(1) mustEqual Credit(progUuid, -1,"actor","Mara Urshel")
+      credits(2) mustEqual Credit(progUuid, -1,"actor","Randy Fenoli")
     }
   }
 }
