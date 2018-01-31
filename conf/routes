@@ -5,6 +5,9 @@
 
 # An example controller showing a sample home page
 GET     /                           controllers.HomeController.index
+GET     /api/channels               @controllers.ChannelsController.allChannels
+GET     /api/channels/:chan    @controllers.ChannelsController.channelById(channelId = chan)
+
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count
 # An example controller showing how to write asynchronous code

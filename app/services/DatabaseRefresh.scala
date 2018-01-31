@@ -27,10 +27,10 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
   maybeSetupSchema().onComplete({
     case Success(unit)=>
       Logger.info("Successfully set up schema")
-      actorSystem.scheduler.schedule(1.micro, 1.minute){ doRefresh() }
+      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
     case Failure(error)=>
       Logger.warn("Could not set up schema",error)
-      actorSystem.scheduler.schedule(1.micro, 1.minute){ doRefresh() }
+      actorSystem.scheduler.schedule(1.micro, 10.minutes){ doRefresh() }
   })
 
   def doRefresh():Unit = {
@@ -49,7 +49,7 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
     }
     Logger.info("Done")
     if(currentGeneration.isDefined) {
-      Logger.info(s"Deleting old generation info $currentGeneration")
+      Logger.info(s"Deleting old generation info ${currentGeneration.get}")
       val deleteFuture = deleteProgrammesByGeneration(currentGeneration.get)
       Await.result(deleteFuture, 1.minute)
       val deleteCredsFuture = deleteCreditsByGeneration(currentGeneration.get)

@@ -27,6 +27,13 @@ libraryDependencies += "com.nrinaudo" %% "kantan.xpath" % "0.3.2"
 // https://mvnrepository.com/artifact/org.scalatestplus.play/scalatestplus-play
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "3.1.2" % Test
 
+val circeVersion = "0.9.0"
+libraryDependencies ++= Seq(
+  "io.circe" %% "circe-core",
+  "io.circe" %% "circe-generic",
+  "io.circe" %% "circe-parser"
+).map(_ % circeVersion)
+
 unmanagedResourceDirectories in Test <+=  baseDirectory ( _ /"target/web/public/test" )  
 
       
