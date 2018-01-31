@@ -142,3 +142,13 @@ li.attribution {
     justify-content: space-between;
     margin-bottom: 1em;
 }
+
+img.channel-logo {
+    height: 64px;
+    vertical-align: middle;
+}
+
+p.programme-description {
+    font-size: 0.7em;
+    font-family: "Courier",Serif;
+}
