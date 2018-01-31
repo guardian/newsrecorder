@@ -15,27 +15,8 @@ case class Programme(startTime: ZonedDateTime, endTime: ZonedDateTime, channelId
 
  */
 
-class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME"){
+class ProgrammeTable(tag:Tag) extends Table[Programme](tag, "PROGRAMME") with CustomConverters {
   val channels = TableQuery[ChannelTable]
-  implicit val timestampColumnType = MappedColumnType.base[ZonedDateTime, Date](
-    { data => new Date(data.toEpochSecond) },
-    { sql => ZonedDateTime.ofInstant(Instant.ofEpochSecond(sql.getTime),ZoneOffset.UTC) }
-  )
-
-  implicit val seqIntColumnType = MappedColumnType.base[Seq[Int], String](
-    { data=> data.map(_.toString).mkString(",")},
-    { sql => sql.split(",").map(_.toInt)}
-  )
-
-  implicit val seqStringColumnType = MappedColumnType.base[Option[Seq[String]], String](
-    { data=> data.getOrElse(Seq()).mkString("|") },
-    { sql => if(sql.isEmpty) None else Some(sql.split("|"))}
-  )
-
-  implicit val uuidColumnType = MappedColumnType.base[UUID,String](
-    { data=>data.toString},
-    { sql =>UUID.fromString(sql)}
-  )
 
   def uuid = column[UUID]("PROG_UUID",O.PrimaryKey)
   def startTime = column[ZonedDateTime]("START")

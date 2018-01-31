@@ -39,7 +39,7 @@ object NewProgramme extends XmlHelpers {
     val episodeNum:Option[String] = nodeString.evalXPath[String](xp"//episode-num[@system='dd_progid']") match {
       case Success(xpResult)=>Some(xpResult.toString)
       case Failure(error)=>
-        println(error)
+        //println(error)
         None
     }
 
@@ -56,6 +56,12 @@ object NewProgramme extends XmlHelpers {
       episodeNum
     )
     //getCredits(xmlNode \ "credits"),
+  }
+
+  def fromXmlNodeWithCredits(xmlNode:Node, generation:Int):(Programme,Seq[Credit]) = {
+    val prog = fromXmlNode(xmlNode, generation)
+    val credits = CreditsList.fromXmlNode(xmlNode,prog.uuid, generation)
+    (prog, credits)
   }
 }
 

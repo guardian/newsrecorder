@@ -27,30 +27,34 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
   maybeSetupSchema().onComplete({
     case Success(unit)=>
       Logger.info("Successfully set up schema")
-      actorSystem.scheduler.schedule(1.micro, 10.seconds){ doRefresh() }
+      actorSystem.scheduler.schedule(1.micro, 1.minute){ doRefresh() }
     case Failure(error)=>
       Logger.warn("Could not set up schema",error)
-      actorSystem.scheduler.schedule(1.micro, 10.seconds){ doRefresh() }
+      actorSystem.scheduler.schedule(1.micro, 1.minute){ doRefresh() }
   })
 
   def doRefresh():Unit = {
     val currentGeneration = Await.result(getCurrentGeneration, 5.seconds)
 
+    println(s"Current generation is $currentGeneration")
     val updateFutures = try {
       if(currentGeneration.isDefined)
-        Future.sequence(readInData("/Users/localhome/workdev/newsrecorder/tv_uk_extractedinfo.xml",currentGeneration.get+1))
+        readInData("/Users/localhome/workdev/newsrecorder/tv_uk_extractedinfo.xml",currentGeneration.get+1)
       else
-        Future.sequence(readInData("/Users/localhome/workdev/newsrecorder/tv_uk_extractedinfo.xml",1))
+        readInData("/Users/localhome/workdev/newsrecorder/tv_uk_extractedinfo.xml",1)
     } catch {
       case e:Exception=>
         Logger.error("Could not refresh: ",e)
-        Future.failed(e)
+        return
     }
-
-    Await.result(updateFutures, 3.minutes)
+    Logger.info("Done")
     if(currentGeneration.isDefined) {
+      Logger.info(s"Deleting old generation info $currentGeneration")
       val deleteFuture = deleteProgrammesByGeneration(currentGeneration.get)
       Await.result(deleteFuture, 1.minute)
+      val deleteCredsFuture = deleteCreditsByGeneration(currentGeneration.get)
+      Await.result(deleteCredsFuture, 1.minute)
+      Logger.info("Done")
     }
   }
 
@@ -63,7 +67,7 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
   def maybeSetupSchema():Future[Unit] = {
     Logger.info("Setting up database schema to default db")
     val schemaSetup = DBIO.seq(
-      channels.schema.create
+      (channels.schema ++ programmes.schema ++ credits.schema).create
     )
     //db is provided by the HasDatabaseConfigProvider trait
     val rtn = db.run(schemaSetup)
@@ -71,7 +75,7 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
     rtn
   }
 
-  def readInData(filename:String, generation:Int):Seq[Future[Int]] = {
+  def readInData(filename:String, generation:Int):Unit = {
     Logger.info(s"Reading in listings data from $filename...")
     val xmldoc = XML.loadFile(filename)
 
@@ -79,15 +83,31 @@ class DatabaseRefresh @Inject() (protected val dbConfigProvider: DatabaseConfigP
     val channelsPresent = for(chanNode <- xmldoc \ "channel") yield NewChannel.fromXmlNode(chanNode)
     val channelsUpdate = for(chan <- channelsPresent) yield channels.insertOrUpdate(chan)
 
-    val programmesPresent = for(progNode <- xmldoc \ "programme") yield NewProgramme.fromXmlNode(progNode,generation)
+    val programmesAndCredits = for(progNode <- xmldoc \ "programme") yield NewProgramme.fromXmlNodeWithCredits(progNode,generation)
+
+    val programmesPresent = programmesAndCredits.map(_._1)
+    val creditsPresent = programmesAndCredits.flatMap(_._2)
 
     //val credits = for(progNode <- xmldoc \ "programme") yield CreditsList.fromXmlNode(progNode)
+    channelsUpdate.map(chan=>Await.result(db.run(chan),5.seconds))
+    Logger.info("Done")
 
-    channelsUpdate.map(db.run(_))
+    Logger.info(s"Outputting programmes data generation $generation to database")
+    Await.ready(db.run(DBIO.seq(programmes ++= programmesPresent)), 10.minutes)
+    Logger.info("Done")
+
+    Logger.info(s"Outputting credits data generation $generation to database")
+    Await.ready(db.run(DBIO.seq(credits ++= creditsPresent)),10.minutes)
+    Logger.info(s"Done")
   }
 
   /* returns a future containing the number of rows deleted */
   def deleteProgrammesByGeneration(generation:Int):Future[Int] = {
+    val action = programmes.filter(_.generation===generation).delete
+    db.run(action)
+  }
+
+  def deleteCreditsByGeneration(generation:Int):Future[Int] = {
     val action = programmes.filter(_.generation===generation).delete
     db.run(action)
   }
