@@ -4,7 +4,6 @@ import javax.inject._
 
 import akka.actor.ActorSystem
 import play.api.Logger
-import play.api.inject.ApplicationLifecycle
 
 import scala.concurrent.{Await, Future}
 import scala.xml.XML
