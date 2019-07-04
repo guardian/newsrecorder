@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "webpack -d --watch",
     "build": "webpack -p",
-    "test": "jest"
+    "test": "jest",
+    "snyk-protect": "snyk protect",
+    "prepublish": "npm run snyk-protect"
   },
   "author": "",
   "license": "ISC",
@@ -31,7 +33,8 @@
     "react-router-dom": "^4.1.1",
     "react-sortable-table": "^1.3.0",
     "strftime": "^0.10.0",
-    "webpack": "^2.3.2"
+    "webpack": "^2.3.2",
+    "snyk": "^1.189.0"
   },
   "devDependencies": {
     "assert": "^1.4.1",
@@ -58,5 +61,6 @@
     "classNameTemplate": "{classname}-{title}",
     "titleTemplate": "{classname}-{title}",
     "usePathForSuiteName": "false"
-  }
+  },
+  "snyk": true
 }
